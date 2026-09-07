@@ -19,7 +19,7 @@ export default async function AdminHomePage() {
     hasPermission(permissions, "ecommerce.view") ? db.product.count({ where: { status: "ACTIVE" } }) : Promise.resolve(0),
     hasPermission(permissions, "ecommerce.orders") ? db.order.count({ where: { status: "PENDING" } }) : Promise.resolve(0),
     hasPermission(permissions, "ecommerce.inventory")
-      ? db.$queryRaw<{ count: bigint }[]>`SELECT COUNT(*) as count FROM InventoryItem WHERE stock <= reorderThreshold`
+      ? db.$queryRaw<{ count: bigint }[]>`SELECT COUNT(*) as count FROM "InventoryItem" WHERE "stock" <= "reorderThreshold"`
       : Promise.resolve([{ count: 0n }]),
   ]);
 

@@ -29,7 +29,7 @@ export default async function EcommerceAnalyticsPage({ searchParams }: { searchP
     db.order.aggregate({ where: { paymentStatus: "PAID", createdAt: { gte: start } }, _sum: { total: true }, _count: true }),
     db.order.count({ where: { createdAt: { gte: start } } }),
     db.$queryRaw<{ day: string; revenue: number | null; orders: bigint }[]>`
-      SELECT strftime('%Y-%m-%d', "createdAt") as day, SUM("total") as revenue, COUNT(*) as orders
+      SELECT TO_CHAR("createdAt", 'YYYY-MM-DD') as day, SUM("total") as revenue, COUNT(*) as orders
       FROM "Order"
       WHERE "paymentStatus" = 'PAID' AND "createdAt" >= ${start}
       GROUP BY day
