@@ -31,6 +31,7 @@ import {
   UserCog,
   Activity,
   Image as ImageLucide,
+  Cog,
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
 
@@ -104,6 +105,7 @@ export const ADMIN_NAV: NavSection[] = [
       { label: "Media", href: "/admin/media", icon: ImageLucide, permission: "system.media" },
       { label: "Users & Roles", href: "/admin/users", icon: UserCog, permission: "system.users" },
       { label: "Activity", href: "/admin/activity", icon: Activity, permission: "system.activity" },
+      { label: "Jobs", href: "/admin/jobs", icon: Cog, permission: "system.jobs" },
     ],
   },
 ];
