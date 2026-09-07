@@ -21,12 +21,14 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
   const data = parsed.data;
 
-  if (data.status === "PUBLISHED" && !session.user.permissions.includes("blog.publish")) {
-    return NextResponse.json({ error: "You do not have permission to publish posts." }, { status: 403 });
-  }
-
   const existing = await db.blogPost.findUnique({ where: { id }, include: { tags: { select: { tagId: true } } } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Only a genuine transition into PUBLISHED requires blog.publish — saving
+  // an already-published post (with status left unchanged) is an ordinary edit.
+  if (data.status === "PUBLISHED" && existing.status !== "PUBLISHED" && !session.user.permissions.includes("blog.publish")) {
+    return NextResponse.json({ error: "You do not have permission to publish posts." }, { status: 403 });
+  }
 
   if (data.slug !== existing.slug) {
     const slugTaken = await db.blogPost.findUnique({ where: { slug: data.slug }, select: { id: true } });

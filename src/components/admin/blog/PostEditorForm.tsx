@@ -214,12 +214,15 @@ export function PostEditorForm({ post, categories, tags, authors, canPublish }: 
                     onChange={(e) => setStatus(e.target.value)}
                     className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
                   >
-                    {POST_STATUSES.map((s) => (
-                      <option key={s} value={s} disabled={s === "PUBLISHED" && !canPublish}>
-                        {s}
-                        {s === "PUBLISHED" && !canPublish ? " (no permission)" : ""}
-                      </option>
-                    ))}
+                    {POST_STATUSES.map((s) => {
+                      const disabled = s === "PUBLISHED" && !canPublish && post?.status !== "PUBLISHED";
+                      return (
+                        <option key={s} value={s} disabled={disabled}>
+                          {s}
+                          {disabled ? " (no permission)" : ""}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 <div className="space-y-1.5">
