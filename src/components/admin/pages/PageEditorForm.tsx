@@ -8,15 +8,29 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { SeoEditorPanel } from "@/components/seo/SeoEditorPanel";
 import { ContentEditor } from "@/components/admin/ContentEditor";
+import { BlockEditor } from "@/components/admin/pages/blocks/BlockEditor";
 import { slugify } from "@/lib/utils";
-import { PAGE_STATUSES } from "@/lib/pages/validation";
+import { PAGE_STATUSES, type ContentFormat } from "@/lib/pages/validation";
+import type { Block } from "@/lib/pages/blocks/types";
 
 export interface PageEditorInitial {
   id: string;
   title: string;
   slug: string;
   content: string;
+  contentFormat: string;
+  blocks: string | null;
   status: string;
+}
+
+function parseInitialBlocks(raw: string | null | undefined): Block[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as Block[]) : [];
+  } catch {
+    return [];
+  }
 }
 
 interface PageEditorFormProps {
@@ -32,6 +46,8 @@ export function PageEditorForm({ page, canPublish }: PageEditorFormProps) {
   const [slug, setSlug] = useState(page?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(!!page);
   const [content, setContent] = useState(page?.content ?? "");
+  const [contentFormat, setContentFormat] = useState<ContentFormat>((page?.contentFormat as ContentFormat) ?? "blocks");
+  const [blocks, setBlocks] = useState<Block[]>(() => parseInitialBlocks(page?.blocks));
   const [status, setStatus] = useState(page?.status ?? "DRAFT");
 
   const [saving, setSaving] = useState(false);
@@ -52,7 +68,7 @@ export function PageEditorForm({ page, canPublish }: PageEditorFormProps) {
     setError(null);
     setSaveMessage(null);
 
-    const payload = { title, slug, content, status };
+    const payload = { title, slug, content, contentFormat, blocks: contentFormat === "blocks" ? blocks : undefined, status };
     const url = isNew ? "/api/admin/pages" : `/api/admin/pages/${page.id}`;
     const method = isNew ? "POST" : "PUT";
     const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -148,8 +164,31 @@ export function PageEditorForm({ page, canPublish }: PageEditorFormProps) {
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label>Content</Label>
-              <ContentEditor value={content} onChange={setContent} />
+              <div className="flex items-center justify-between">
+                <Label>Content</Label>
+                {contentFormat === "html" ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setBlocks([{ id: crypto.randomUUID(), type: "customHtml", data: { html: content } }]);
+                      setContentFormat("blocks");
+                    }}
+                  >
+                    Switch to block editor
+                  </Button>
+                ) : (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setContentFormat("html")}>
+                    Switch to HTML editor
+                  </Button>
+                )}
+              </div>
+              {contentFormat === "blocks" ? (
+                <BlockEditor value={blocks} onChange={setBlocks} />
+              ) : (
+                <ContentEditor value={content} onChange={setContent} />
+              )}
             </div>
           </div>
         </TabsContent>

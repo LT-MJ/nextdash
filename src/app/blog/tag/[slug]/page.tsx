@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/server/db";
 import { getTagBySlug } from "@/lib/blog/queries";
-import { BlogChrome } from "../../_components/BlogChrome";
 import { PostCard, type PostCardData } from "../../_components/PostCard";
 import { Pagination } from "../../_components/Pagination";
 import { Breadcrumbs } from "../../_components/Breadcrumbs";
@@ -61,7 +60,7 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
   }));
 
   return (
-    <BlogChrome>
+    <>
       <div className="space-y-8">
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Blog", href: "/blog" }, { label: `#${tag.name}` }]} />
         <div>
@@ -79,6 +78,6 @@ export default async function BlogTagPage({ params, searchParams }: PageProps) {
         )}
         <Pagination basePath={`/blog/tag/${tag.slug}`} page={page} totalPages={totalPages} />
       </div>
-    </BlogChrome>
+    </>
   );
 }

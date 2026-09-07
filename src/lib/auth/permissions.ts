@@ -14,6 +14,8 @@ export const PERMISSIONS = {
     "ecommerce.settings",
   ],
   system: ["system.users", "system.settings", "system.activity", "system.media", "system.jobs"],
+  menus: ["menus.view", "menus.edit"],
+  site: ["site.settings"],
 } as const;
 
 export type PermissionGroup = keyof typeof PERMISSIONS;
@@ -40,7 +42,7 @@ export const ROLE_PRESETS: Record<string, { name: string; description: string; p
   page_editor: {
     name: "Page Editor",
     description: "Creates and publishes site pages, including their SEO panel.",
-    permissions: [...PERMISSIONS.pages, "seo.view", "seo.edit"],
+    permissions: [...PERMISSIONS.pages, ...PERMISSIONS.menus, "seo.view", "seo.edit", "system.media"],
   },
   blog_editor: {
     name: "Blog Editor",

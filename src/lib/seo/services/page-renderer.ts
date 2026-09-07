@@ -2,6 +2,10 @@ import { resolveSeo } from "../resolver";
 import { getSchemaGenerator } from "../schema/generators";
 import { getGlobalSeoSettings } from "./settings";
 import { renderJsonLdTags } from "../json-ld";
+import { escapeHtml, escapeAttr } from "@/lib/html/escape";
+import { parseBlocks } from "@/lib/pages/blocks/schema";
+import { renderBlocksToHtml } from "@/lib/pages/blocks/render";
+import { resolveSiteChrome, renderHeaderHtml, renderFooterHtml } from "@/lib/site/chrome-render";
 import type { db } from "@/lib/server/db";
 
 type PageRow = Awaited<ReturnType<typeof db.page.findUnique>>;
@@ -19,7 +23,7 @@ type PageRow = Awaited<ReturnType<typeof db.page.findUnique>>;
  * separate, unstyled document.
  */
 export async function renderPageHtml(page: NonNullable<PageRow>): Promise<string> {
-  const [seo, globalSettings] = await Promise.all([
+  const [seo, globalSettings, chrome] = await Promise.all([
     resolveSeo({
       entityType: "page",
       entityId: page.id,
@@ -27,6 +31,7 @@ export async function renderPageHtml(page: NonNullable<PageRow>): Promise<string
       fallbackTitle: page.title,
     }),
     getGlobalSeoSettings(),
+    resolveSiteChrome(),
   ]);
 
   const webPageSchema = getSchemaGenerator("WebPage")!.generate({
@@ -44,6 +49,8 @@ export async function renderPageHtml(page: NonNullable<PageRow>): Promise<string
 
   const ogImageTag = seo.ogImage ? `<meta property="og:image" content="${escapeAttr(seo.ogImage)}" />` : "";
   const twitterImageTag = seo.twitterImage ? `<meta name="twitter:image" content="${escapeAttr(seo.twitterImage)}" />` : "";
+
+  const bodyHtml = page.contentFormat === "blocks" ? renderBlocksToHtml(parseBlocks(page.blocks)) : page.content;
 
   return `<!doctype html>
 <html lang="en">
@@ -71,29 +78,47 @@ ${jsonLdMarkup}
   }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: "Inter", ui-sans-serif, system-ui, sans-serif; background: hsl(var(--background)); color: hsl(var(--foreground)); }
-  header { border-bottom: 1px solid hsl(var(--border)); padding: 1rem 1.5rem; }
-  header a { color: hsl(var(--foreground)); font-weight: 700; text-decoration: none; font-size: 1.125rem; }
+  .chrome-header { border-bottom: 1px solid hsl(var(--border)); padding: 1rem 1.5rem; display: flex; }
+  .chrome-header--sticky { position: sticky; top: 0; z-index: 40; background: hsl(var(--background)); }
+  .chrome-header--logo-left-nav-right { flex-direction: row; align-items: center; justify-content: space-between; }
+  .chrome-header--centered { flex-direction: row; align-items: center; justify-content: center; gap: 2rem; }
+  .chrome-header--logo-center-nav-below { flex-direction: column; align-items: center; gap: 0.5rem; }
+  .chrome-logo, .chrome-logo:hover { color: hsl(var(--foreground)); font-weight: 700; text-decoration: none; font-size: 1.125rem; }
+  .chrome-logo-image { height: 2rem; width: auto; }
+  .chrome-nav ul { display: flex; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+  .chrome-nav a { color: hsl(var(--muted-foreground)); text-decoration: none; font-size: 0.875rem; font-weight: 500; }
+  .chrome-nav a:hover { color: hsl(var(--foreground)); }
+  .chrome-submenu { list-style: none; margin: 0.25rem 0 0 0; padding: 0 0 0 1rem; }
+  .chrome-footer { border-top: 1px solid hsl(var(--border)); padding: 2.5rem 1.5rem; }
+  .chrome-footer-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 2rem; max-width: 64rem; margin: 0 auto 2rem; }
+  .chrome-footer-column h3 { font-size: 0.875rem; font-weight: 600; margin: 0 0 0.5rem; }
+  .chrome-footer-column ul { list-style: none; margin: 0; padding: 0; }
+  .chrome-footer-column a { color: hsl(var(--muted-foreground)); text-decoration: none; font-size: 0.875rem; line-height: 1.8; }
+  .chrome-footer-column a:hover { color: hsl(var(--foreground)); }
+  .chrome-social { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem; }
+  .chrome-social a { color: hsl(var(--muted-foreground)); text-decoration: none; font-size: 0.875rem; }
+  .chrome-copyright { text-align: center; color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin: 0; }
   main { max-width: 42rem; margin: 0 auto; padding: 3rem 1.5rem; }
   main :is(h1, h2, h3) { line-height: 1.25; }
   main h1 { font-size: 2rem; margin-bottom: 1rem; }
   main p { line-height: 1.7; color: hsl(var(--foreground)); }
   main a { color: hsl(var(--primary)); }
   main img { max-width: 100%; height: auto; border-radius: 0.5rem; }
-  footer { text-align: center; padding: 2rem 1.5rem; color: hsl(var(--muted-foreground)); font-size: 0.875rem; }
+  main .blocks-columns { display: grid; gap: 1.5rem; margin: 1.5rem 0; }
+  main .blocks-columns[data-columns="2"] { grid-template-columns: repeat(2, 1fr); }
+  main .blocks-columns[data-columns="3"] { grid-template-columns: repeat(3, 1fr); }
+  main .blocks-button { display: inline-block; padding: 0.5rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; }
+  main .blocks-button--primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+  main .blocks-button--secondary { background: hsl(var(--border)); color: hsl(var(--foreground)); }
+  main .blocks-button--outline { border: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); }
+  main .blocks-quote { border-left: 3px solid hsl(var(--primary)); margin: 1.5rem 0; padding: 0.25rem 0 0.25rem 1rem; font-style: italic; color: hsl(var(--muted-foreground)); }
+  main hr.blocks-divider { border: none; border-top: 1px solid hsl(var(--border)); margin: 2rem 0; }
 </style>
 </head>
 <body>
-<header><a href="/">${escapeHtml(globalSettings.siteName)}</a></header>
-<main>${page.content}</main>
-<footer>© ${new Date().getFullYear()} ${escapeHtml(globalSettings.siteName)}</footer>
+${renderHeaderHtml(chrome)}
+<main>${bodyHtml}</main>
+${renderFooterHtml(chrome)}
 </body>
 </html>`;
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function escapeAttr(value: string): string {
-  return escapeHtml(value).replace(/"/g, "&quot;");
 }

@@ -15,7 +15,11 @@ explicitly (e.g. the Analytics page) rather than fabricating data.
   duplicate-metadata detection, site audit, internal-link/orphan analysis,
   image-ALT scanning, bulk editor), Pages (admin CRUD + public rendering
   with real title/description/canonical/OG/Twitter/JSON-LD, slug-change
-  redirects — see [pages.md](./pages.md)), Blog CMS (admin + public, revisions,
+  redirects, an in-house Gutenberg-style block editor — see
+  [pages.md](./pages.md)), a site builder layer (homepage/blog-page
+  assignment, a menu builder, a structured header/footer customizer, and
+  the shared site-wide chrome all of that renders through — see
+  [site-builder.md](./site-builder.md)), Blog CMS (admin + public, revisions,
   slug-change redirects), E-commerce (admin + public storefront, real
   transactional checkout with server-side price/stock/coupon
   revalidation, an enforced order state machine), media library, user/role
@@ -38,17 +42,23 @@ explicitly (e.g. the Analytics page) rather than fabricating data.
 - **Google Search Console / Google Analytics**: the Analytics pages (both
   SEO and Commerce) show an honest "not connected" state with the exact
   env vars and next steps needed, rather than fabricated numbers.
-- **Rich text editing**: the blog post and Page content editors share a
-  dependency-free HTML-tag-wrapping toolbar over a textarea
+- **Rich text editing**: the blog post editor (and a Page's optional "HTML"
+  mode) share a dependency-free HTML-tag-wrapping toolbar over a textarea
   (`src/components/admin/ContentEditor.tsx`), not a full WYSIWYG library —
   a deliberate choice to avoid adding a heavy editor dependency for this
-  build; swapping in TipTap/Lexical/etc. later is a contained change to
-  that one component.
+  build. Pages also have a block-based editor now (see
+  [site-builder.md](./site-builder.md)), but its individual text blocks are
+  plain text (no inline bold/italic/links mid-paragraph) — that still goes
+  through a Custom HTML block, the same `ContentEditor`.
 - **Pages have no hierarchy or templates**: the `Page` model is
-  intentionally flat (no parent/child pages, no selectable layout) —
-  every published page renders through the same simple shell. See
-  [pages.md](./pages.md) for why public rendering lives in the catch-all
-  route rather than a `page.tsx`.
+  intentionally flat (no parent/child pages, no selectable per-page layout
+  beyond the block editor's own layout blocks) — every published page
+  renders through the same simple shell. See [pages.md](./pages.md) for why
+  public rendering lives in the catch-all route rather than a `page.tsx`.
+- **Menu nesting is capped at two levels**, and re-parenting a menu item is
+  an explicit picker rather than drag-to-indent — a deliberate simplicity
+  tradeoff over a full nested-tree drag UI. See
+  [site-builder.md](./site-builder.md#menus).
 - **Media storage**: uploads write to local disk (`public/uploads/`) via
   `node:fs` — real and working for a traditional server, but wrong for
   serverless deployment (ephemeral filesystem). See

@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { Upload, Trash2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { formatDateTime } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -19,7 +19,12 @@ interface Asset {
   createdAt: string;
 }
 
-export function MediaLibrary() {
+interface MediaLibraryProps {
+  /** When provided, clicking an asset calls this instead of showing delete controls — used by the Image block's "Browse library" picker. */
+  onSelect?: (asset: Asset) => void;
+}
+
+export function MediaLibrary({ onSelect }: MediaLibraryProps = {}) {
   const { data, mutate, isLoading } = useSWR<{ assets: Asset[] }>("/api/admin/media", fetcher);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,20 +72,29 @@ export function MediaLibrary() {
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {assets.map((asset) => (
-            <div key={asset.id} className="group relative overflow-hidden rounded-lg border border-border">
+            <div
+              key={asset.id}
+              onClick={onSelect ? () => onSelect(asset) : undefined}
+              className={cn(
+                "group relative overflow-hidden rounded-lg border border-border",
+                onSelect && "cursor-pointer hover:border-primary"
+              )}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={asset.url} alt={asset.alt ?? ""} className="aspect-square w-full object-cover" />
               <div className="p-2">
                 <p className="truncate text-xs font-medium">{asset.filename}</p>
                 <p className="text-[10px] text-muted-foreground">{formatDateTime(asset.createdAt)}</p>
               </div>
-              <button
-                onClick={() => handleDelete(asset.id)}
-                aria-label={`Delete ${asset.filename}`}
-                className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              {onSelect ? null : (
+                <button
+                  onClick={() => handleDelete(asset.id)}
+                  aria-label={`Delete ${asset.filename}`}
+                  className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           ))}
         </div>

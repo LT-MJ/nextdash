@@ -6,7 +6,6 @@ import { resolvePageMetadata } from "@/lib/seo/resolver";
 import { getSchemaGenerator } from "@/lib/seo/schema/generators";
 import { getGlobalSeoSettings } from "@/lib/seo/services/settings";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { BlogChrome } from "../../_components/BlogChrome";
 import { PostCard, type PostCardData } from "../../_components/PostCard";
 import { Pagination } from "../../_components/Pagination";
 import { Breadcrumbs } from "../../_components/Breadcrumbs";
@@ -86,7 +85,7 @@ export default async function BlogAuthorPage({ params, searchParams }: PageProps
   }));
 
   return (
-    <BlogChrome>
+    <>
       <JsonLd data={personSchema} />
       <div className="space-y-8">
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Blog", href: "/blog" }, { label: author.name }]} />
@@ -123,6 +122,6 @@ export default async function BlogAuthorPage({ params, searchParams }: PageProps
         )}
         <Pagination basePath={`/blog/author/${author.slug}`} page={page} totalPages={totalPages} />
       </div>
-    </BlogChrome>
+    </>
   );
 }

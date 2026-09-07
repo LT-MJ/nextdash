@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/server/db";
 import { getCategoryBySlug } from "@/lib/blog/queries";
 import { resolvePageMetadata } from "@/lib/seo/resolver";
-import { BlogChrome } from "../../_components/BlogChrome";
 import { PostCard, type PostCardData } from "../../_components/PostCard";
 import { Pagination } from "../../_components/Pagination";
 import { Breadcrumbs } from "../../_components/Breadcrumbs";
@@ -57,7 +56,7 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
   }));
 
   return (
-    <BlogChrome>
+    <>
       <div className="space-y-8">
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Blog", href: "/blog" }, { label: category.name }]} />
         <div>
@@ -75,6 +74,6 @@ export default async function BlogCategoryPage({ params, searchParams }: PagePro
         )}
         <Pagination basePath={`/blog/category/${category.slug}`} page={page} totalPages={totalPages} />
       </div>
-    </BlogChrome>
+    </>
   );
 }

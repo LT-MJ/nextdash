@@ -36,6 +36,8 @@ export async function POST(request: Request) {
       title: data.title,
       slug: data.slug,
       content: data.content ?? "",
+      contentFormat: data.contentFormat,
+      blocks: data.contentFormat === "blocks" ? JSON.stringify(data.blocks ?? []) : null,
       status: data.status,
       publishedAt: data.status === "PUBLISHED" ? new Date() : null,
     },

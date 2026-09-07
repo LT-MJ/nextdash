@@ -24,6 +24,9 @@ src/
         seo/...                  # SEO admin
         blog/...                 # Blog CMS admin
         ecommerce/...            # Commerce admin
+        pages/...                # Pages admin (CRUD + block editor)
+        menus/...                # menu builder
+        site/                    # Reading Settings, Header & Footer customizer
         users/ activity/ media/ jobs/
     api/
       auth/[...nextauth]/        # NextAuth route handlers
@@ -33,15 +36,24 @@ src/
     [...catchall]/route.ts       # redirects, 404 logging, sitemap chunks, IndexNow key file, Page rendering
     robots.txt/route.ts
     sitemap.xml/route.ts
-    page.tsx                     # public homepage
+    page.tsx                     # public homepage (Reading Settings can swap this for a Page)
     blog/...  shop/...  category/...  collections/...  cart/...   # public site
   components/
-    ui/          # design-system primitives (Button, Card, Table, Dialog, Tabs, ...)
+    ui/          # design-system primitives (Button, Card, Table, Dialog, Tabs, Select, Switch, ...)
     admin/       # shared admin chrome (sidebar, topbar, command palette, stat cards, status badges)
+      pages/blocks/  # the block editor (BlockEditor, per-type editors) — see site-builder.md
+      menus/         # the menu builder's item tree + add/edit dialog
+      site/          # Reading Settings + Header & Footer settings forms
     seo/         # SEO editor, score visualization, search/social previews, JSON-LD renderer
+    site/        # <SiteHeader>/<SiteFooter> — the shared public chrome, see site-builder.md
+    content/     # <PageContent> — renders a Page's content inside a real React tree
   lib/
     auth/        # NextAuth config (split edge/full — see below), permissions, guards
     seo/         # the SEO engine — see seo-engine.md
+    pages/       # Pages validation + the block editor's data model (blocks/)
+    menus/       # menu validation + link resolution
+    site/        # Reading Settings / Header & Footer settings + the chrome resolver/renderer
+    html/        # shared escapeHtml/escapeAttr for every hand-built HTML string
     blog/        # blog-specific server logic (reading time, related posts)
     ecommerce/   # commerce-specific server logic (pricing, inventory, coupons, order state machine)
     server/      # Prisma client singleton, background-job wrapper

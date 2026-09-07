@@ -1,4 +1,6 @@
 import { db } from "@/lib/server/db";
+import { parseBlocks } from "@/lib/pages/blocks/schema";
+import { renderBlocksToHtml } from "@/lib/pages/blocks/render";
 import type { ContentTypeKey } from "@/types/seo";
 
 /**
@@ -46,7 +48,9 @@ registerContentAdapter({
     return (await db.page.findUnique({ where: { id: entityId }, select: { slug: true } }))?.slug ?? null;
   },
   async getContentHtml(entityId) {
-    return (await db.page.findUnique({ where: { id: entityId }, select: { content: true } }))?.content ?? "";
+    const page = await db.page.findUnique({ where: { id: entityId }, select: { content: true, contentFormat: true, blocks: true } });
+    if (!page) return "";
+    return page.contentFormat === "blocks" ? renderBlocksToHtml(parseBlocks(page.blocks)) : page.content;
   },
   async exists(entityId) {
     return (await db.page.count({ where: { id: entityId } })) > 0;

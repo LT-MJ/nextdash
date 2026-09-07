@@ -17,6 +17,8 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
     title: page.title,
     slug: page.slug,
     content: page.content,
+    contentFormat: page.contentFormat,
+    blocks: page.blocks,
     status: page.status,
   };
 

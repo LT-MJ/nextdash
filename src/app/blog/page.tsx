@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { db } from "@/lib/server/db";
-import { BlogChrome } from "./_components/BlogChrome";
+import { getReadingSettings } from "@/lib/site/settings";
+import { PageContent } from "@/components/content/PageContent";
 import { PostCard, type PostCardData } from "./_components/PostCard";
 import { CategoryChips } from "./_components/CategoryChips";
 import { Pagination } from "./_components/Pagination";
@@ -10,12 +11,24 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+const DEFAULT_TITLE = "Blog";
+const DEFAULT_DESCRIPTION = "Announcements, guides, and updates.";
+
+async function getBlogIntroPage() {
+  const reading = await getReadingSettings();
+  if (!reading.blogPageId) return null;
+  const page = await db.page.findUnique({ where: { id: reading.blogPageId } });
+  return page && page.status === "PUBLISHED" ? page : null;
+}
+
 // "blog-index" is not a real SEO-adapter-backed entity, so metadata here is
-// static rather than routed through resolvePageMetadata (spec item 6).
-export const metadata: Metadata = {
-  title: "Blog",
-  description: "Announcements, guides, and updates.",
-};
+// static (falling back to that) rather than routed through
+// resolvePageMetadata (spec item 6) — a Reading Settings blog-page swaps
+// just the title, not full SEO resolution.
+export async function generateMetadata(): Promise<Metadata> {
+  const introPage = await getBlogIntroPage();
+  return { title: introPage?.title ?? DEFAULT_TITLE, description: DEFAULT_DESCRIPTION };
+}
 
 const PAGE_SIZE = 12;
 
@@ -28,6 +41,8 @@ export default async function BlogIndexPage({ searchParams }: { searchParams: Pr
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
   const search = sp.search?.trim() ?? "";
+
+  const introPage = await getBlogIntroPage();
 
   const featured =
     page === 1 && !search
@@ -68,11 +83,25 @@ export default async function BlogIndexPage({ searchParams }: { searchParams: Pr
   }));
 
   return (
-    <BlogChrome>
+    <>
       <div className="space-y-10">
         <div className="space-y-4 text-center">
-          <h1 className="text-4xl font-bold tracking-tight">Blog</h1>
-          <p className="mx-auto max-w-xl text-muted-foreground">Announcements, guides, and updates.</p>
+          {introPage ? (
+            <>
+              <h1 className="text-4xl font-bold tracking-tight">{introPage.title}</h1>
+              <PageContent
+                content={introPage.content}
+                contentFormat={introPage.contentFormat}
+                blocks={introPage.blocks}
+                className="mx-auto max-w-xl text-muted-foreground [&_p]:my-0"
+              />
+            </>
+          ) : (
+            <>
+              <h1 className="text-4xl font-bold tracking-tight">Blog</h1>
+              <p className="mx-auto max-w-xl text-muted-foreground">Announcements, guides, and updates.</p>
+            </>
+          )}
           <form method="get" className="mx-auto flex max-w-md gap-2">
             <Input name="search" defaultValue={search} placeholder="Search posts…" aria-label="Search posts" />
             <Button type="submit" aria-label="Search">
@@ -109,6 +138,6 @@ export default async function BlogIndexPage({ searchParams }: { searchParams: Pr
 
         <Pagination basePath="/blog" page={page} totalPages={totalPages} extraParams={{ search }} />
       </div>
-    </BlogChrome>
+    </>
   );
 }

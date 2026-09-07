@@ -67,10 +67,16 @@ images) rather than trying to replicate the whole design system.
 Only `PUBLISHED` pages render publicly; `DRAFT`/`ARCHIVED` ones 404 (and
 get logged like any other unmatched URL, same as blog/product).
 
+## Block editor
+
+Pages can now be designed with an in-house, Gutenberg-style block editor
+instead of raw HTML — see
+[site-builder.md](./site-builder.md#block-editor-gutenberg-style-custom-in-house)
+for the full writeup (data model, block types, and how public rendering
+works from inside this same catch-all route).
+
 ## What this doesn't include
 
 - No page templates/layouts (every page uses the same simple shell) or
   page hierarchy (no parent/child pages) — the `Page` model is intentionally
   flat, matching the spec's simplest case.
-- No visual/block editor — the same pragmatic HTML-toolbar editor as blog
-  posts, not a page-builder.

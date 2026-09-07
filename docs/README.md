@@ -17,6 +17,7 @@ onto existing conventions.
 - [Permissions & roles](./permissions.md)
 - [Scheduled jobs](./scheduled-jobs.md)
 - [Pages](./pages.md)
+- [Site builder: block editor, menus, header/footer, reading settings](./site-builder.md)
 - [Blog CMS](./blog.md)
 - [E-commerce](./ecommerce.md)
 - [Security](./security.md)

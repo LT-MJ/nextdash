@@ -10,7 +10,6 @@ import { resolvePageMetadata } from "@/lib/seo/resolver";
 import { getGlobalSeoSettings } from "@/lib/seo/services/settings";
 import { getSchemaGenerator } from "@/lib/seo/schema/generators";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { BlogChrome } from "../_components/BlogChrome";
 import { PostContent } from "../_components/PostContent";
 import { PostCard, type PostCardData } from "../_components/PostCard";
 import { Breadcrumbs } from "../_components/Breadcrumbs";
@@ -90,7 +89,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   }));
 
   return (
-    <BlogChrome>
+    <>
       <JsonLd data={[articleSchema, breadcrumbSchema]} />
       <article className="space-y-8">
         <Breadcrumbs
@@ -173,6 +172,6 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
         ) : null}
       </article>
-    </BlogChrome>
+    </>
   );
 }

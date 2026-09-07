@@ -32,6 +32,9 @@ import {
   Activity,
   Image as ImageLucide,
   Cog,
+  ListTree,
+  Home,
+  LayoutTemplate,
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
 
@@ -56,6 +59,14 @@ export const ADMIN_NAV: NavSection[] = [
     label: "Content",
     items: [
       { label: "Pages", href: "/admin/pages", icon: FileText, permission: "pages.view" },
+      { label: "Menus", href: "/admin/menus", icon: ListTree, permission: "menus.view" },
+    ],
+  },
+  {
+    label: "Site",
+    items: [
+      { label: "Reading", href: "/admin/site/reading", icon: Home, permission: "site.settings" },
+      { label: "Header & Footer", href: "/admin/site/header-footer", icon: LayoutTemplate, permission: "site.settings" },
     ],
   },
   {

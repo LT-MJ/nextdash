@@ -324,16 +324,91 @@ model MediaAsset {
 // ============================================================================
 
 model Page {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  title       String
-  content     String    @default("")
-  status      String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
-  publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  content       String    @default("")
+  /// "html" (content is raw HTML) | "blocks" (content lives in `blocks`)
+  contentFormat String    @default("html")
+  /// JSON-stringified Block[] (src/lib/pages/blocks/types.ts) when contentFormat = "blocks"
+  blocks        String?
+  status        String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  homepageFor ReadingSettings[] @relation("ReadingSettingsHomepage")
+  blogPageFor ReadingSettings[] @relation("ReadingSettingsBlogPage")
 
   @@index([status])
+}
+
+// ============================================================================
+// SITE CHROME — MENUS, HEADER/FOOTER, READING (HOMEPAGE/BLOG-PAGE) SETTINGS
+// ============================================================================
+
+model Menu {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items      MenuItem[]
+  primaryFor HeaderFooterSettings[]
+}
+
+model MenuItem {
+  id           String   @id @default(cuid())
+  menuId       String
+  parentId     String?
+  label        String
+  linkType     String   @default("CUSTOM") // CUSTOM | HOME | PAGE | POST | CATEGORY
+  url          String? // used when linkType = CUSTOM
+  targetId     String? // Page.id / BlogPost.id / BlogCategory.id when linkType is internal
+  openInNewTab Boolean  @default(false)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  menu     Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parent   MenuItem?  @relation("MenuItemTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children MenuItem[] @relation("MenuItemTree")
+
+  @@index([menuId])
+  @@index([parentId])
+}
+
+model HeaderFooterSettings {
+  id String @id @default("default")
+
+  logoImageUrl String?
+  logoAltText  String?
+  logoText     String? // text-logo fallback when no image is set
+
+  headerLayout  String  @default("logo-left-nav-right") // logo-left-nav-right | centered | logo-center-nav-below
+  headerSticky  Boolean @default(false)
+  primaryMenuId String?
+
+  /// JSON array of { heading: string, menuId?: string, links?: {label,url}[] }
+  footerColumns String?
+  /// JSON array of { platform: string, url: string }
+  socialLinks   String?
+  copyrightText String  @default("© {year} {siteName}. All rights reserved.")
+
+  updatedAt DateTime @updatedAt
+
+  primaryMenu Menu? @relation(fields: [primaryMenuId], references: [id], onDelete: SetNull)
+}
+
+model ReadingSettings {
+  id             String   @id @default("default")
+  homepageMode   String   @default("DEFAULT") // DEFAULT | PAGE
+  homepagePageId String?
+  blogPageId     String?
+  updatedAt      DateTime @updatedAt
+
+  homepagePage Page? @relation("ReadingSettingsHomepage", fields: [homepagePageId], references: [id], onDelete: SetNull)
+  blogPage     Page? @relation("ReadingSettingsBlogPage", fields: [blogPageId], references: [id], onDelete: SetNull)
 }
 
 // ============================================================================

@@ -41,6 +41,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
       title: data.title,
       slug: data.slug,
       content: data.content ?? "",
+      contentFormat: data.contentFormat,
+      blocks: data.contentFormat === "blocks" ? JSON.stringify(data.blocks ?? []) : null,
       status: data.status,
       publishedAt,
     },

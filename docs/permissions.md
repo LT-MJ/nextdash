@@ -5,11 +5,21 @@
 ```
 seo.view seo.edit seo.settings seo.redirects seo.audit seo.sitemap seo.analytics seo.indexing
 pages.view pages.edit pages.publish
+menus.view menus.edit
+site.settings
 blog.view blog.edit blog.publish blog.settings
 ecommerce.view ecommerce.products ecommerce.inventory ecommerce.orders
   ecommerce.customers ecommerce.coupons ecommerce.reviews ecommerce.analytics ecommerce.settings
 system.users system.settings system.activity system.media system.jobs
 ```
+
+`menus.*` gates the menu builder (`/admin/menus`); `site.settings` gates
+Reading Settings and the Header & Footer customizer (both structural,
+site-wide surfaces, so kept at admin-level granularity like `seo.settings`)
+— see [site-builder.md](./site-builder.md). `page_editor` also gets
+`menus.*` (navigation and pages are closely coupled editorial work) and
+`system.media` (so its holders can use the Image block's media-library
+picker).
 
 A `Role` (`prisma/schema.prisma`) stores its permission list as a JSON
 string array. Seeded presets (`ROLE_PRESETS` in `permissions.ts`, applied by
