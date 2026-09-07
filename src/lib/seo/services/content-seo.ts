@@ -178,6 +178,48 @@ export async function saveSeoMetadata(
   return { ...saved, seoScore: analysis.score, seoGrade: analysis.grade };
 }
 
+export interface BulkSeoFlagChanges {
+  robotsIndex?: boolean;
+  robotsFollow?: boolean;
+  sitemapInclude?: boolean;
+}
+
+/**
+ * Bulk-apply safe, non-destructive SEO flags (index/follow/sitemap
+ * inclusion) across many entities of one content type at once. Deliberately
+ * does not support bulk title/description overwrites — spec §46/§88 warns
+ * against silently overwriting per-item content in bulk; those still go
+ * through the per-item editor or CSV import with a dry-run.
+ */
+export async function bulkUpdateSeoFlags(
+  entityType: ContentTypeKey,
+  entityIds: string[],
+  changes: BulkSeoFlagChanges,
+  actorUserId?: string
+): Promise<number> {
+  let updated = 0;
+  for (const entityId of entityIds) {
+    const existing = await db.seoMetadata.findUnique({ where: { entityType_entityId: { entityType, entityId } } });
+    await db.seoMetadata.upsert({
+      where: { entityType_entityId: { entityType, entityId } },
+      update: changes,
+      create: { entityType, entityId, robotsIndex: true, robotsFollow: true, sitemapInclude: true, ...changes },
+    });
+    updated += 1;
+    await db.activityLog.create({
+      data: {
+        userId: actorUserId,
+        action: "seo.bulk_update",
+        entityType,
+        entityId,
+        oldValue: existing ? JSON.stringify(existing) : null,
+        newValue: JSON.stringify(changes),
+      },
+    });
+  }
+  return updated;
+}
+
 export async function getEntityTitleForContentType(entityType: ContentTypeKey, entityId: string): Promise<string | null> {
   const adapter = getContentAdapter(entityType);
   if (!adapter) return null;
