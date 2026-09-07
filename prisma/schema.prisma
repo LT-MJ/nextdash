@@ -1,16 +1,16 @@
 // Nextdash — unified SEO / Blog CMS / E-commerce platform
-// Prisma schema. Provider is SQLite for zero-config local development;
-// switching to PostgreSQL for production is a one-line datasource change
-// (see docs/database.md) — models avoid SQLite-only features other than
-// the lack of native arrays (modeled as join tables or JSON columns).
+// Prisma schema. PostgreSQL (Supabase) in production; see docs/database.md
+// for the SQLite-for-local-dev option and the caveats that predate this
+// switch (JSON-string fields instead of native arrays, Float money fields).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================================================

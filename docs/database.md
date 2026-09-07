@@ -1,9 +1,13 @@
 # Database
 
-Prisma + SQLite (`prisma/schema.prisma`, file at `DATABASE_URL=file:./dev.db`).
-SQLite was chosen so the project runs with zero external services — clone,
-`npm install`, `prisma db push`, done. It has two consequences worth
-understanding before you deploy this for real:
+Production runs on **PostgreSQL via Supabase** (`prisma/schema.prisma`,
+`DATABASE_URL` set to the pooled connection string, `DIRECT_URL` to the
+direct one for migrations — see `.env.example`). Local development can
+still point `DATABASE_URL` at a `file:./dev.db` SQLite file by switching
+the schema's `provider` back to `"sqlite"` and dropping `directUrl`, if you
+want a zero-external-services setup; the two consequences below predate
+the Postgres switch and no longer apply once you're on Postgres, but are
+kept here as history/context for anyone using the SQLite path:
 
 ## JSON-array-like fields are `String?`, not native arrays
 
@@ -27,22 +31,16 @@ floating-point rounding errors compound. **Before going to production,
 migrate these to `Decimal(10,2)` under PostgreSQL** and re-run all order/
 coupon/tax arithmetic through decimal-safe operations.
 
-## Switching to PostgreSQL
+## Migrations
 
-1. In `prisma/schema.prisma`, change the datasource:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-2. Set `DATABASE_URL` to a `postgresql://` connection string.
-3. Run `npx prisma migrate dev --name init` instead of `db push` from here
-   on, so you get a real migration history.
-4. Consider converting the JSON-string fields above to native `Json` columns
-   (Postgres supports `Json`/`Jsonb` natively via Prisma) and the money
-   fields to `Decimal(10,2)` — both require a data migration script, not
-   just a schema edit, if you have existing rows.
+Schema changes go through `prisma migrate dev --name <description>` (creates
+a migration file under `prisma/migrations/` and applies it) locally, and
+`npm run db:migrate:deploy` (`prisma migrate deploy`) in CI/production —
+never `db:push` against the Supabase database, so migration history stays
+intact. Consider converting the JSON-string fields above to native `Json`
+columns (Postgres supports `Json`/`Jsonb` natively via Prisma) and the money
+fields to `Decimal(10,2)` — both require a data migration script, not just a
+schema edit, since there are existing rows.
 
 ## Models at a glance
 
