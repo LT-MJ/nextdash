@@ -1,5 +1,6 @@
 export const PERMISSIONS = {
   seo: ["seo.view", "seo.edit", "seo.settings", "seo.redirects", "seo.audit", "seo.sitemap", "seo.analytics", "seo.indexing"],
+  pages: ["pages.view", "pages.edit", "pages.publish"],
   blog: ["blog.view", "blog.edit", "blog.publish", "blog.settings"],
   ecommerce: [
     "ecommerce.view",
@@ -34,7 +35,12 @@ export const ROLE_PRESETS: Record<string, { name: string; description: string; p
   seo_manager: {
     name: "SEO Manager",
     description: "Manages all SEO configuration, audits, and content SEO.",
-    permissions: [...PERMISSIONS.seo, "blog.view", "ecommerce.view"],
+    permissions: [...PERMISSIONS.seo, "pages.view", "pages.edit", "blog.view", "ecommerce.view"],
+  },
+  page_editor: {
+    name: "Page Editor",
+    description: "Creates and publishes site pages, including their SEO panel.",
+    permissions: [...PERMISSIONS.pages, "seo.view", "seo.edit"],
   },
   blog_editor: {
     name: "Blog Editor",
@@ -49,7 +55,7 @@ export const ROLE_PRESETS: Record<string, { name: string; description: string; p
   analyst: {
     name: "Analyst",
     description: "Read-only access to analytics and reporting across modules.",
-    permissions: ["seo.view", "seo.analytics", "blog.view", "ecommerce.view", "ecommerce.analytics"],
+    permissions: ["seo.view", "seo.analytics", "pages.view", "blog.view", "ecommerce.view", "ecommerce.analytics"],
   },
 };
 

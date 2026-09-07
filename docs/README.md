@@ -16,6 +16,7 @@ onto existing conventions.
 - [SEO engine](./seo-engine.md)
 - [Permissions & roles](./permissions.md)
 - [Scheduled jobs](./scheduled-jobs.md)
+- [Pages](./pages.md)
 - [Blog CMS](./blog.md)
 - [E-commerce](./ecommerce.md)
 - [Security](./security.md)

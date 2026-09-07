@@ -53,6 +53,12 @@ export const ADMIN_NAV: NavSection[] = [
     items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
   },
   {
+    label: "Content",
+    items: [
+      { label: "Pages", href: "/admin/pages", icon: FileText, permission: "pages.view" },
+    ],
+  },
+  {
     label: "SEO",
     items: [
       { label: "Dashboard", href: "/admin/seo", icon: Gauge, permission: "seo.view" },

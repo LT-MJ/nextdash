@@ -13,7 +13,9 @@ explicitly (e.g. the Analytics page) rather than fabricating data.
 - Auth/RBAC, the full SEO engine (rule-based scoring, metadata resolver,
   schema generators, sitemap/robots/redirects/404 monitor, IndexNow,
   duplicate-metadata detection, site audit, internal-link/orphan analysis,
-  image-ALT scanning, bulk editor), Blog CMS (admin + public, revisions,
+  image-ALT scanning, bulk editor), Pages (admin CRUD + public rendering
+  with real title/description/canonical/OG/Twitter/JSON-LD, slug-change
+  redirects — see [pages.md](./pages.md)), Blog CMS (admin + public, revisions,
   slug-change redirects), E-commerce (admin + public storefront, real
   transactional checkout with server-side price/stock/coupon
   revalidation, an enforced order state machine), media library, user/role
@@ -36,11 +38,17 @@ explicitly (e.g. the Analytics page) rather than fabricating data.
 - **Google Search Console / Google Analytics**: the Analytics pages (both
   SEO and Commerce) show an honest "not connected" state with the exact
   env vars and next steps needed, rather than fabricated numbers.
-- **Rich text editing**: the blog post content editor is a dependency-free
-  HTML-tag-wrapping toolbar over a textarea, not a full WYSIWYG library —
+- **Rich text editing**: the blog post and Page content editors share a
+  dependency-free HTML-tag-wrapping toolbar over a textarea
+  (`src/components/admin/ContentEditor.tsx`), not a full WYSIWYG library —
   a deliberate choice to avoid adding a heavy editor dependency for this
   build; swapping in TipTap/Lexical/etc. later is a contained change to
-  `src/components/admin/blog/ContentEditor.tsx`.
+  that one component.
+- **Pages have no hierarchy or templates**: the `Page` model is
+  intentionally flat (no parent/child pages, no selectable layout) —
+  every published page renders through the same simple shell. See
+  [pages.md](./pages.md) for why public rendering lives in the catch-all
+  route rather than a `page.tsx`.
 - **Media storage**: uploads write to local disk (`public/uploads/`) via
   `node:fs` — real and working for a traditional server, but wrong for
   serverless deployment (ephemeral filesystem). See

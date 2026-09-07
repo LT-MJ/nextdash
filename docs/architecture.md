@@ -30,7 +30,7 @@ src/
       admin/...                  # authenticated admin API routes (mirrors the admin/ page tree)
       shop/...                   # public-facing cart/checkout API
       cron/                      # scheduled-maintenance endpoint (bearer-token gated)
-    [...catchall]/route.ts       # redirects, 404 logging, sitemap chunks, IndexNow key file
+    [...catchall]/route.ts       # redirects, 404 logging, sitemap chunks, IndexNow key file, Page rendering
     robots.txt/route.ts
     sitemap.xml/route.ts
     page.tsx                     # public homepage
@@ -95,7 +95,7 @@ That's why `app/admin/login/page.tsx` sits outside the `app/admin/(dashboard)/`
 route group: the group's `layout.tsx` is the only thing that calls
 `requireAuth()`.
 
-## Redirects, 404s, and sitemap chunks: why one catch-all route
+## Redirects, 404s, Pages, and sitemap chunks: why one catch-all route
 
 The public technical-SEO surfaces (redirect resolution with a specific HTTP
 status 301/302/303/307/308, 404 logging, chunked sitemap files named
@@ -105,12 +105,24 @@ segments must be *entirely* dynamic (`[slug]`), not a mix of static text and
 a bracketed param in one folder name — so a chunked sitemap filename like
 `sitemap-post-1.xml` can't be expressed as its own route file.
 
+Standalone CMS Pages (spec's "Pages" content type — see
+[pages.md](./pages.md)) get pulled into this same file for a related reason:
+they want clean top-level URLs (`/about`, matching what the sitemap already
+promises), which puts them at the same single-segment routing position as
+the IndexNow key file. Next.js won't let two differently-named single
+dynamic segments (`[slug]` for pages, something else for the key file)
+coexist as siblings, so both have to be resolved by the same route.
+
 The solution is `src/app/[...catchall]/route.ts`: a single catch-all Route
 Handler (Node.js runtime by default) that only ever runs for a request that
 didn't match anything more specific. It checks, in order: does the last path
 segment look like `sitemap-{type}-{n}.xml`? Does it match the configured
-IndexNow key file? Is there a redirect for this exact path (or a regex-mode
-one)? If none of those, log the miss to `NotFoundLog` and return a 404.
+IndexNow key file? Is there a published Page at this slug? Is there a
+redirect for this exact path (or a regex-mode one)? If none of those, log
+the miss to `NotFoundLog` and return a 404. Since a Route Handler can't
+render a `page.tsx`'s React tree, Page rendering builds its HTML by hand
+(`src/lib/seo/services/page-renderer.ts`) — see pages.md for how that stays
+consistent with `resolveSeo()`/JSON-LD/styling instead of duplicating logic.
 `/robots.txt` and `/sitemap.xml` themselves are separate, fully-static route
 folders (`app/robots.txt/route.ts`, `app/sitemap.xml/route.ts`) — Next.js
 always prefers a more specific static match over the catch-all, so there's

@@ -7,7 +7,7 @@ import { Input, Label, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { SeoEditorPanel } from "@/components/seo/SeoEditorPanel";
-import { ContentEditor } from "@/components/admin/blog/ContentEditor";
+import { ContentEditor } from "@/components/admin/ContentEditor";
 import { RevisionsPanel } from "@/components/admin/blog/RevisionsPanel";
 import { slugify } from "@/lib/utils";
 import { calculateReadingTime } from "@/lib/blog/reading-time";

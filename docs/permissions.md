@@ -4,6 +4,7 @@
 
 ```
 seo.view seo.edit seo.settings seo.redirects seo.audit seo.sitemap seo.analytics seo.indexing
+pages.view pages.edit pages.publish
 blog.view blog.edit blog.publish blog.settings
 ecommerce.view ecommerce.products ecommerce.inventory ecommerce.orders
   ecommerce.customers ecommerce.coupons ecommerce.reviews ecommerce.analytics ecommerce.settings
@@ -13,7 +14,7 @@ system.users system.settings system.activity system.media system.jobs
 A `Role` (`prisma/schema.prisma`) stores its permission list as a JSON
 string array. Seeded presets (`ROLE_PRESETS` in `permissions.ts`, applied by
 `prisma/seed.ts`): `super_admin`, `administrator`, `seo_manager`,
-`blog_editor`, `commerce_manager`, `analyst`. New roles can be created from
+`page_editor`, `blog_editor`, `commerce_manager`, `analyst`. New roles can be created from
 `/admin/users` (permission editing for *custom* roles isn't in the UI yet —
 today you can assign a user to any existing role, but authoring a new
 permission set requires a database write; see
