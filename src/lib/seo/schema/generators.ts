@@ -209,7 +209,12 @@ registerSchemaGenerator<BreadcrumbData>({
       itemListElement: data.items.map((item, index) => ({
         "@type": "ListItem",
         position: index + 1,
-        name: item.name,
+        // Defensive fallback: getSchemaGenerator() erases the specific
+        // BreadcrumbData type (the registry stores generators as
+        // SchemaGenerator<Record<string, unknown>>), so a caller passing
+        // {label, url} instead of {name, url} isn't caught by tsc — it
+        // happened once already. Never silently emit a nameless ListItem.
+        name: item.name ?? (item as unknown as { label?: string }).label ?? "",
         item: item.url,
       })),
     };

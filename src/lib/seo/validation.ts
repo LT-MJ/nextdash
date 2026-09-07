@@ -25,7 +25,13 @@ export const seoMetadataInputSchema = z.object({
   ogTitle: z.string().trim().max(160).optional().nullable(),
   ogDescription: z.string().trim().max(320).optional().nullable(),
   ogImage: z.string().trim().url().optional().nullable().or(z.literal("")),
-  ogType: z.string().trim().max(50).optional().nullable(),
+  // Must match VALID_OG_TYPES in resolver.ts — Next.js's typed metadata API
+  // throws at render time for anything outside this set (notably "product"
+  // is not supported, despite being common in the wild).
+  ogType: z
+    .enum(["website", "article", "book", "profile", "music.song", "music.album", "music.playlist", "music.radio_station", "video.movie", "video.episode", "video.tv_show", "video.other"])
+    .optional()
+    .nullable(),
 
   twitterTitle: z.string().trim().max(160).optional().nullable(),
   twitterDescription: z.string().trim().max(320).optional().nullable(),

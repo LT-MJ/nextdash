@@ -75,7 +75,15 @@ export async function resolveSeo(params: ResolveSeoParams): Promise<ResolvedSeo>
     ogTitle: entity?.ogTitle || title,
     ogDescription: entity?.ogDescription || description,
     ogImage,
-    ogType: entity?.ogType || (params.entityType === "post" ? "article" : params.entityType === "product" ? "product" : "website"),
+    // Next.js's typed `openGraph.type` only accepts a fixed set of values
+    // (website/article/book/profile/music.*/video.*) — "product" is NOT
+    // among them, even though it's common in the wild via the OG product
+    // namespace extension. Passing an unsupported value throws inside
+    // Next's metadata renderer and silently blanks out the entire page's
+    // <head> in production. Products default to "website" here; a real
+    // og:type="product" tag would need to be injected outside the typed
+    // metadata API (e.g. a raw <meta> tag in the page itself).
+    ogType: entity?.ogType || (params.entityType === "post" ? "article" : "website"),
     twitterCard: entity?.twitterCard || "summary_large_image",
     twitterTitle: entity?.twitterTitle || title,
     twitterDescription: entity?.twitterDescription || description,
@@ -84,8 +92,33 @@ export async function resolveSeo(params: ResolveSeoParams): Promise<ResolvedSeo>
   };
 }
 
+// Next.js's typed `openGraph.type` throws at render time for anything
+// outside this fixed set (spec-correct OG values it doesn't support, like
+// "product", are NOT included). Validate rather than blindly casting —
+// bad data here previously blanked an entire page's <head> in production
+// with no visible error.
+const VALID_OG_TYPES = new Set([
+  "website",
+  "article",
+  "book",
+  "profile",
+  "music.song",
+  "music.album",
+  "music.playlist",
+  "music.radio_station",
+  "video.movie",
+  "video.episode",
+  "video.tv_show",
+  "video.other",
+]);
+
+const VALID_TWITTER_CARDS = new Set(["summary", "summary_large_image", "app", "player"]);
+
 /** Converts a ResolvedSeo object into a Next.js `generateMetadata()` return value. */
 export function toNextMetadata(resolved: ResolvedSeo): Metadata {
+  const ogType = VALID_OG_TYPES.has(resolved.ogType) ? resolved.ogType : "website";
+  const twitterCard = VALID_TWITTER_CARDS.has(resolved.twitterCard) ? resolved.twitterCard : "summary_large_image";
+
   return {
     title: resolved.title,
     description: resolved.description ?? undefined,
@@ -98,11 +131,11 @@ export function toNextMetadata(resolved: ResolvedSeo): Metadata {
       title: resolved.ogTitle,
       description: resolved.ogDescription ?? undefined,
       url: resolved.canonicalUrl,
-      type: resolved.ogType as never,
+      type: ogType as never,
       images: resolved.ogImage ? [{ url: resolved.ogImage }] : undefined,
     },
     twitter: {
-      card: resolved.twitterCard as never,
+      card: twitterCard as never,
       title: resolved.twitterTitle,
       description: resolved.twitterDescription ?? undefined,
       images: resolved.twitterImage ? [resolved.twitterImage] : undefined,
