@@ -10,8 +10,9 @@ export default async function SeoAuditPage() {
         <h1 className="text-2xl font-bold tracking-tight">Site Audit</h1>
         <p className="text-sm text-muted-foreground">
           Summarizes failed rule checks from previously analyzed content, plus duplicate metadata and orphan-page detection.
-          Content that has never been opened in the SEO editor won&apos;t have a stored analysis yet — visit{" "}
-          <Link className="text-primary underline" href="/admin/seo/content">Content SEO</Link> to analyze it.
+          Content that has never been saved from the SEO editor won&apos;t have a stored analysis yet (viewing it isn&apos;t enough —
+          the score is only persisted on save) — visit{" "}
+          <Link className="text-primary underline" href="/admin/seo/content">Content SEO</Link> and save each item once to include it.
         </p>
       </div>
       <AuditRunner />

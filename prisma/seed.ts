@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { ROLE_PRESETS } from "../src/lib/auth/permissions";
 import { DEFAULT_SEO_RULES } from "../src/lib/seo/rules/catalog";
+import { analyzeContentSeo } from "../src/lib/seo/services/content-seo";
 
 const prisma = new PrismaClient();
 
@@ -191,6 +192,23 @@ async function main() {
       focusKeyword: "sample product",
     },
   });
+
+  console.log("Computing initial SEO analysis for seeded content...");
+  for (const [entityType, entityId] of [
+    ["post", post.id],
+    ["product", product.id],
+  ] as const) {
+    const analysis = await analyzeContentSeo(entityType, entityId);
+    await prisma.seoMetadata.update({
+      where: { entityType_entityId: { entityType, entityId } },
+      data: {
+        seoScore: analysis.score,
+        seoGrade: analysis.grade,
+        seoScoreBreakdown: JSON.stringify(analysis.results),
+        analyzedAt: new Date(),
+      },
+    });
+  }
 
   console.log("Seed complete.");
   console.log(`Admin login: ${adminEmail} / ${adminPassword}`);
